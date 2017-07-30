@@ -198,7 +198,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 			    }else{
 				$code_error = $res->code;
 				$error = "خطا در پاسخ دهی به درخواست با :" . $code_error;
-				throw new Exception($this->NextPayStatusMessage($error)
+				throw new Exception($this->NextPayStatusMessage($error));
 			    }
 			}else{
 			    $error = "خطا در پاسخ دهی به درخواست با SoapClinet";
@@ -269,7 +269,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 
 				$this->_setPaymentCompleted((int)$payment_id);
 
-				$message = JText::_("PLG_DJCFNEXTPAY_PAYMENT_SUCCEED") . '<br>' .  JText::_("PLG_DJCFNEXTPAY_PAYMENT_REF_ID") . $RefID;
+				$message = JText::_("PLG_DJCFNEXTPAY_PAYMENT_SUCCEED") . '<br>' .  JText::_("PLG_DJCFNEXTPAY_PAYMENT_REF_ID") . $trans_id;
 				$app->redirect($messageUrl, $message, 'message');
 
 				exit;
