@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="djclassifiedspayment"  method="upgrade">
+	<name>PLG_DJCFNEXTPAY_PAYMENT_NAME</name>
+	<author>NextPay Co</author>
+	<creationDate>July 2017</creationDate>
+	<copyright>Copyright (C) 2017 NextPay.ir LTD, All rights reserved.</copyright>
+	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<authorEmail>info@nextpay.ir</authorEmail>
+	<authorUrl>https://nextpay.ir</authorUrl>
+	<version>3.4.2</version>
+	<description>PLG_DJCFNEXTPAY_PAYMENT_DESCRIPTION</description>
+	<files>
+		<filename plugin="djcfNextpay">djcfNextpay.php</filename>
+		<folder>djcfNextpay</folder>
+	</files>
+	<languages folder="language">
+		<language tag="fa-IR">fa-IR.plg_djclassifiedspayment_djcfNextpay.ini</language>
+		<language tag="fa-IR">fa-IR.plg_djclassifiedspayment_djcfNextpay.sys.ini</language>
+	</languages>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="api_key" type="text" size="50" required="true" default="" label="PLG_DJCFNEXTPAY_PAYMENT_LABEL_API_KEY" description="PLG_DJCFNEXTPAY_PAYMENT_DESC_API_KEY"/>
+				<field name="currency_code" type="radio" default="1" label="PLG_DJCFNEXTPAY_PAYMENT_LABEL_CURRENCY" description="PLG_DJCFNEXTPAY_PAYMENT_DESC_CURRENCY">
+					<option value="0">PLG_DJCFNEXTPAY_PAYMENT_RIAL</option>
+					<option value="1">PLG_DJCFNEXTPAY_PAYMENT_TOMAN</option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>
