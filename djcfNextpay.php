@@ -367,7 +367,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 			$type='&type='.$val['type'];	
 		}		
 		$html ='';
-		if($this->params["merchant_id"] != ''){
+		if($this->params["api_key"] != ''){
 			$payText =  JText::_("PLG_DJCFNEXTPAY_PAYMENT_PAY");
 			$paymentLogoPath = JURI::root()."plugins/djclassifiedspayment/".$this->params["plugin_name"]."/".$this->params["plugin_name"]."/images/".$this->params["logo"];
 			$form_action = JURI::root()."index.php?option=com_djclassifieds&task=processPayment&ptype=".$this->params["plugin_name"]."&pactiontype=process&id=".$val["id"].$type;
