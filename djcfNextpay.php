@@ -51,7 +51,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 
 	function process($id)
 	{
-		JTable::addIncludePath(JPATH_COMPONENT_ADMINISTRATOR.DS.'tables');		
+		JTable::addIncludePath(JPATH_COMPONENT_ADMINISTRATOR.DS.'tables');
 		jimport( 'joomla.database.table' );
 		$db 	= JFactory::getDBO();
 		$app 	= JFactory::getApplication();
@@ -172,7 +172,8 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 		$payment_title = 'ItemID:'.$id.' ('.$itemname.')';
 		$payment_reason = $type ? $type : $item->pay_type;
 
-		$CallbackURL = JRoute::_(JURI::base() . 'index.php?option=com_djclassifieds&task=processPayment&ptype=djcfNextpay&pactiontype=notify&id='.$payment_id. '&amount=' . $amount);
+		$CallbackURL = JRoute::_(JURI::base() . 'index.php?option=com_djclassifieds&task=processPayment&ptype=djcfNextpay&pactiontype=notify&id='.$id);
+
 
 		$params = array(
 			'api_key' => $api_key,
@@ -182,10 +183,10 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 		);
 
 		try{
-			
+
 			$trans_id = "";
 			$code_error = -1000;
-			
+
 			$soap_client = new SoapClient("https://api.nextpay.org/gateway/token.wsdl", array('encoding' => 'UTF-8'));
 			$res = $soap_client->TokenGenerator($params);
 
@@ -198,11 +199,11 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 			    }else{
 				$code_error = $res->code;
 				$error = "خطا در پاسخ دهی به درخواست با :" . $code_error;
-				throw new Exception($this->NextPayStatusMessage($error));
+				throw new Exception($error);
 			    }
 			}else{
 			    $error = "خطا در پاسخ دهی به درخواست با SoapClinet";
-			    throw new Exception($this->NextPayStatusMessage($error));
+			    throw new Exception($error);
 			}
 
 		} catch (Exception $e) {
@@ -215,10 +216,11 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 
 	function _notify_url($id)
 	{
+
 		$db = JFactory::getDBO();
 		$par = &JComponentHelper::getParams( 'com_djclassifieds' );
 		// $user	= JFactory::getUser();
-		$payment_id	= JRequest::getInt('id', 0);
+		$payment_id	= JRequest::getInt('order_id', 0);
 		$app = JFactory::getApplication();
 		$input = $app->input;
 		$messageUrl = JRoute::_(DJClassifiedsSEO::getCategoryRoute('0:all'));
@@ -226,9 +228,9 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 		try{
 			$order_id = $input->post->get('order_id')? $input->getString('order_id') : $_POST['order_id'];
 			$trans_id = $input->post->get('trans_id')? $input->getString('trans_id') : $_POST['trans_id'];
-			
+
 			if(!isset($order_id) || !isset($trans_id)) throw new Exception( JText::_("PLG_DJCFNEXTPAY_PAYMENT_FAILED"));
-			
+
 			$query ="SELECT p.* FROM #__djcf_points p "
 				."WHERE p.id=".$id." LIMIT 1";
 			$db->setQuery($query);
@@ -238,16 +240,16 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 				$redirect="index.php?option=com_djclassifieds&view=items&cid=0";
 				$app->redirect(JRoute::_($redirect), $message, 'warning');
 			}
-			$amount = $points->price;
+
+			$amount = $this->NextPayCheckAmount($points->price);
 			$api_key = $this->params['api_key'];
-			
+
 			$params = array(
 				'api_key' => $api_key,
 				'amount' => $amount,
 				'order_id' => $order_id,
 				'trans_id' => $trans_id
 			);
-
 
 			$soap_client = new SoapClient("https://api.nextpay.org/gateway/verify.wsdl", array('encoding' => 'UTF-8'));
 			$res = $soap_client->PaymentVerification($params);
@@ -258,9 +260,9 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 			if ($res != "" && $res != NULL && is_object($res)) {
 			    $code = $res->code;
 			}
-			
-			
-			if (intval($code) == 0) 
+
+
+			if (intval($code) == 0)
 			{
 				$query = "UPDATE #__djcf_payments SET status='Completed', transaction_id='".$trans_id."' "
 					."WHERE id=".$payment_id." AND method='".$this->params['plugin_name']."'";
@@ -276,7 +278,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 			}
 			$error = "پرداخت ناموفق بوده است، کد خطا : " . $code;
 
-			throw new Exception($this->NextPayStatusMessage($error));
+			throw new Exception($error);
 
 		} catch (Exception $e) {
 			$message = JText::_("PLG_DJCFNEXTPAY_PAYMENT_ERROR") . $e->getMessage();
@@ -346,16 +348,6 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 		return (int)$amount;
 	}
 
-	private function NextPayStatusMessage($status)
-	{
-		$prefix = "PLG_DJCFNEXTPAY_PAYMENT_STATUS_";
-		$status = $prefix . $status;
-		$message =  JText::_($status);
-		if ($message == $status) {
-			return JText::_($prefix . 'UNDEFINED');
-		}
-		return $message;
-	}
 
 	/*
 	 * when payment will be listed in payment choose page
@@ -364,8 +356,8 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 	{
 		$type='';
 		if($val['type']){
-			$type='&type='.$val['type'];	
-		}		
+			$type='&type='.$val['type'];
+		}
 		$html ='';
 		if($this->params["api_key"] != ''){
 			$payText =  JText::_("PLG_DJCFNEXTPAY_PAYMENT_PAY");
