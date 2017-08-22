@@ -172,7 +172,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 		$payment_title = 'ItemID:'.$id.' ('.$itemname.')';
 		$payment_reason = $type ? $type : $item->pay_type;
 
-		$CallbackURL = JRoute::_(JURI::base() . 'index.php?option=com_djclassifieds&task=processPayment&ptype=djcfNextpay&pactiontype=notify&id='.$id);
+		$CallbackURL = JRoute::_(JURI::base() . 'index.php?option=com_djclassifieds&task=processPayment&ptype=djcfNextpay&pactiontype=notify&amount='.$amount);
 
 
 		$params = array(
@@ -214,40 +214,27 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 		}
 	}
 
-	function _notify_url($id)
+	function _notify_url()
 	{
 
 		$db = JFactory::getDBO();
 		$par = &JComponentHelper::getParams( 'com_djclassifieds' );
 		// $user	= JFactory::getUser();
-		$payment_id	= JRequest::getInt('order_id', 0);
 		$app = JFactory::getApplication();
 		$input = $app->input;
 		$messageUrl = JRoute::_(DJClassifiedsSEO::getCategoryRoute('0:all'));
 
 		try{
-			$order_id = $input->post->get('order_id')? $input->getString('order_id') : $_POST['order_id'];
-			$trans_id = $input->post->get('trans_id')? $input->getString('trans_id') : $_POST['trans_id'];
 
-			if(!isset($order_id) || !isset($trans_id)) throw new Exception( JText::_("PLG_DJCFNEXTPAY_PAYMENT_FAILED"));
-
-			$query ="SELECT p.* FROM #__djcf_points p "
-				."WHERE p.id=".$id." LIMIT 1";
-			$db->setQuery($query);
-			$points = $db->loadObject();
-			if(!isset($points)){
-				$message = JText::_('COM_DJCLASSIFIEDS_WRONG_POINTS_PACKAGE');
-				$redirect="index.php?option=com_djclassifieds&view=items&cid=0";
-				$app->redirect(JRoute::_($redirect), $message, 'warning');
-			}
-
-			$amount = $this->NextPayCheckAmount($points->price);
+			$amount = $input->getInt('amount', 0);
+			$payment_id = $input->getInt('order_id', 0);
+			$trans_id = $input->get('trans_id', 0);
 			$api_key = $this->params['api_key'];
 
 			$params = array(
 				'api_key' => $api_key,
 				'amount' => $amount,
-				'order_id' => $order_id,
+				'order_id' => $payment_id,
 				'trans_id' => $trans_id
 			);
 
@@ -276,7 +263,7 @@ class plgdjclassifiedspaymentdjcfNextpay extends JPlugin
 
 				exit;
 			}
-			$error = "پرداخت ناموفق بوده است، کد خطا : " . $code;
+			$error = "پرداخت ناموفق ، کد خطا : " . $code;
 
 			throw new Exception($error);
 
